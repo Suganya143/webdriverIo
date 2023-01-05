@@ -1,0 +1,28 @@
+{
+  "name": "webdriverio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "wdio run config/wdio.test.conf.ts",
+    "wdio": "wdio run ./wdio.conf.ts"
+  },
+  "author": "ManikandanRajendran",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@wdio/allure-reporter": "^8.1.2",
+    "@wdio/cli": "^8.1.2",
+    "@wdio/cucumber-framework": "^8.1.2",
+    "@wdio/local-runner": "^8.1.2",
+    "@wdio/spec-reporter": "^8.1.2",
+    "chai": "^4.3.7",
+    "chromedriver": "^108.0.0",
+    "dotenv": "^16.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4",
+    "wdio-chromedriver-service": "^8.0.1",
+    "wdio-wait-for": "^3.0.1"
+  }
+}
