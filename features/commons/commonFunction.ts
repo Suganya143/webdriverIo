@@ -10,30 +10,30 @@ export async function clickElement(element, waitTime?){
         return assert.ok(false,`--> Error Description: Unable to enter the Value${err}`);
     }
 }
-    export async deleteCookies() {
+    export async function deleteCookies() {
         await browser.deleteAllCookies();
     }
 
-    export async open(path: string): Promise<void> {
+    export async function open(path: string): Promise<void> {
         browser.maximizeWindow();
         await browser.url(path);
     }
 
-    export async launch(path: string): Promise<void> {
+    export async function launch(path: string): Promise<void> {
         await browser.navigateTo(path);
     }
 
-    export async isElementDisplayed(element) {
+    export async function isElementDisplayed(element) {
         let ele = await $(element);
         return await element.isDisplayed();
     }
 
-    export async isElementEnabled(element) {
+    export async function isElementEnabled(element) {
         let ele = await $(element);
         return await element.isEnabled();
     }
 
-    export async clickElement(element) {
+    export async function clickElement(element) {
         try {
             let ele = await $(element);
             await ele.click();
@@ -42,7 +42,7 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-   export async enterValue(element, value) {
+   export async function enterValue(element, value) {
         try {
             let ele = await $(element);
             await ele.addValue(value);
@@ -51,7 +51,7 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-    export async clickElementOnlyIfDisplayed(element) {
+    export async function clickElementOnlyIfDisplayed(element) {
         try {
             let ele = await $(element);
             return (ele.isDisplayed())
@@ -67,7 +67,7 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-    export async waitElementToDisplay(element, options?: { waitTime?, intervals?, isReverse?}) {
+    export async function waitElementToDisplay(element, options?: { waitTime?, intervals?, isReverse?}) {
         const time = options.waitTime === undefined ? 2000 : options.waitTime;
         const frequency = options.intervals === undefined ? 100 : options.intervals;
         const flag = options.isReverse === undefined ? false : options.isReverse;
@@ -80,7 +80,7 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-    export async waitElementToClick(element : string, options?: { waitTime?: number, intervals?: number, isReverse?: boolean}) {
+    export async function waitElementToClick(element : string, options?: { waitTime?: number, intervals?: number, isReverse?: boolean}) {
         console.log(element)
         console.log(options.waitTime)
         const time = options.waitTime === undefined ? 2000 : options.waitTime;
@@ -95,7 +95,7 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-    export async getTextOfElement(element): Promise<string> {
+    export async function getTextOfElement(element): Promise<string> {
         try {
             let ele = await $(element);
             return (await ele.getText()).toString();
@@ -104,18 +104,18 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-    export async waitExplicitTime(time: number = 2000): Promise<unknown> {
+    export async function waitExplicitTime(time: number = 2000): Promise<unknown> {
         return await browser.pause(time);
     }
 
-    export async generateRandomNumber(maximumRange?: number): Promise<number> {
+    export async function generateRandomNumber(maximumRange?: number): Promise<number> {
         const max = maximumRange === undefined ? 11 : maximumRange;
         const randomnumber = Math.round(Math.random() * max);
         console.log(randomnumber);
         return randomnumber;
     }
 
-    export async getElementsListCount(element): Promise<number> {
+    export async function getElementsListCount(element): Promise<number> {
         try {
             let ele = await $$(element);
             return ele.length;
@@ -124,7 +124,7 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-    export async getOneElementFromListOfElement(element, indexPosition?): Promise<number> {
+    export async function getOneElementFromListOfElement(element, indexPosition?): Promise<number> {
         try {
             const index = indexPosition === undefined ? 0 : indexPosition;
             const ele = browser.execute(() => document.querySelectorAll(element));
@@ -134,12 +134,12 @@ export async function clickElement(element, waitTime?){
         }
     }
 
-    export async scrollToTop(): Promise<any> {
+    export async function scrollToTop(): Promise<any> {
         //this.debug("Scrolling to the top of the page...");
         return await browser.execute("window.scrollTo(0,0);");
     }
 
-    export async scrollIntoElementView(element, options?: { block?, inline?}) {
+    export async function scrollIntoElementView(element, options?: { block?, inline?}) {
         const blockView = options.block === undefined ? 'start' : options.block;
         const inlineView = options.inline === undefined ? 'nearest' : options.inline;
         try {
