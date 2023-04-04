@@ -1,20 +1,44 @@
 import type { Options } from '@wdio/types'
-import dotenv from "dotenv"
+import cucumberJson from 'wdio-cucumberjs-json-reporter'
+
+const report = require('multiple-cucumber-html-reporter');
+const { removeSync } = require('fs-extra');
+var executionStartTime;
+var executionEndTime;
 
 export const config: Options.Testrunner = {
     //
     // ====================
     // Runner Configuration
     // ====================
-    // WebdriverIO supports running e2e tests as well as unit and component tests.
-    runner: 'local',
+    //
+    //
+    // =====================
+    // ts-node Configurations
+    // =====================
+    //
+    // You can write tests using TypeScript to get autocompletion and type safety.
+    // You will need typescript and ts-node installed as devDependencies.
+    // WebdriverIO will automatically detect if these dependencies are installed
+    // and will compile your config and tests for you.
+    // If you need to configure how ts-node runs please use the
+    // environment variables for ts-node or use wdio config's autoCompileOpts section.
+    //
+
     autoCompileOpts: {
+        autoCompile: true,
+        // see https://github.com/TypeStrong/ts-node#cli-and-programmatic-options
+        // for all available options
         tsNodeOpts: {
-            project: './tsconfig.json'
+            transpileOnly: true,
+            project: 'tsconfig.json'
         }
+        // tsconfig-paths is only used if "tsConfigPathsOpts" are provided, if you
+        // do please make sure "tsconfig-paths" is installed as dependency
+        // tsConfigPathsOpts: {
+        //     baseUrl: './'
+        // }
     },
-    
-    
     //
     // ==================
     // Specify Test Files
@@ -32,8 +56,7 @@ export const config: Options.Testrunner = {
     // will be called from there.
     //
     specs: [
-        // ToDo: define location for spec files here
-        `${process.cwd()}/features/**/*.feature`
+        './features/**/*.feature'
     ],
     // Patterns to exclude.
     exclude: [
@@ -55,33 +78,13 @@ export const config: Options.Testrunner = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 10,
+    // maxInstances: 10,
     //
     // If you have trouble getting all important capabilities together, check out the
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
     // https://saucelabs.com/platform/platform-configurator
     //
-    capabilities: [{
-    
-        // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-        // grid with only 5 firefox instances available you can make sure that not more than
-        // 5 instances get started at a time.
-        maxInstances: 5,
-        //
-        browserName: 'chrome',
-        acceptInsecureCerts: true,
-        'goog:chromeOptions': { 
-            args: [ '--enable-automation','disable-infobars', 'disable-popup-blocking', 'disable-notifications' ],
-            prefs: {
-                'profile.default_content_settings.popups' : 1,
-                'profile.default_content_settings.notifications' : 1,
-            }
-        }
-        // If outputDir is provided WebdriverIO can capture driver session logs
-        // it is possible to configure which logTypes to include/exclude.
-        // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
-        // excludeDriverLogs: ['bugreport', 'server'],
-    }],
+    capabilities: [],
     //
     // ===================
     // Test Configurations
@@ -113,7 +116,7 @@ export const config: Options.Testrunner = {
     // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
     // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
     // gets prepended directly.
-    baseUrl: 'http://localhost',
+    baseUrl: 'https://tsa.soda.testroyallondongroup.com/',
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -129,8 +132,8 @@ export const config: Options.Testrunner = {
     // Services take over a specific job you don't want to take care of. They enhance
     // your test setup with almost no effort. Unlike plugins, they don't add new
     // commands. Instead, they hook themselves up into the test process.
-    services: ['chromedriver'],
-    
+    // services: ['chromedriver'],
+
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber
     // see also: https://webdriver.io/docs/frameworks
@@ -151,14 +154,24 @@ export const config: Options.Testrunner = {
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
     // see also: https://webdriver.io/docs/dot-reporter
-    reporters: ['spec'],
-
-
+    reporters: ['cucumberjs-json',
+        ["spec", {
+            symbols: {
+                passed: '[PASS]',
+                failed: '[FAIL]',
+            }
+        }],
+        ['junit', {
+            outputDir: './',
+            outputFileFormat: function () { // optional
+                return `resultsAsXml.xml`
+            }
+        }]],
     //
     // If you are using Cucumber you need to specify the location of your step definitions.
     cucumberOpts: {
         // <string[]> (file/dir) require files before executing features
-        require: [`${process.cwd()}/features/stepDefinition/*.ts`],
+        require: ['./step-definitions/**/*.ts'],
         // <boolean> show full backtrace for errors
         backtrace: false,
         // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
@@ -174,13 +187,13 @@ export const config: Options.Testrunner = {
         // <boolean> fail if there are any undefined or pending steps
         strict: false,
         // <string> (expression) only execute the features or scenarios with tags matching the expression
-        tagExpression: '@demo',
+        tagExpression: '',
         // <number> timeout for step definitions
         timeout: 60000,
         // <boolean> Enable this config to treat undefined definitions as warnings.
         ignoreUndefinedDefinitions: false
     },
-    
+
     //
     // =====
     // Hooks
@@ -194,8 +207,10 @@ export const config: Options.Testrunner = {
      * @param {Object} config wdio configuration object
      * @param {Array.<Object>} capabilities list of capabilities details
      */
-    // onPrepare: function (config, capabilities) {
-    // },
+
+    onPrepare: (config, capabilities): void => {
+        removeSync('.tmp/');
+    },
     /**
      * Gets executed before a worker process is spawned and can be used to initialise specific service
      * for that worker as well as modify runtime environments in an async fashion.
@@ -205,8 +220,14 @@ export const config: Options.Testrunner = {
      * @param  {[type]} args     object that will be merged with the main configuration once worker is initialized
      * @param  {[type]} execArgv list of string arguments passed to the worker process
      */
-    // onWorkerStart: function (cid, caps, specs, args, execArgv) {
-    // },
+    onWorkerStart: function (cid, caps, specs, args, execArgv) {
+        executionStartTime = new Date();
+        const date = executionStartTime.getDate();
+        const month = executionStartTime.getMonth() + 1;
+        const year = executionStartTime.getFullYear();
+        const timeStamp = executionStartTime.getHours() + ':' + executionStartTime.getMinutes() + ':' + executionStartTime.getSeconds();
+        executionStartTime = year + '/' + month + '/' + date + ' ' + timeStamp;
+    },
     /**
      * Gets executed just after a worker process has exited.
      * @param  {String} cid      capability id (e.g 0-0)
@@ -214,8 +235,14 @@ export const config: Options.Testrunner = {
      * @param  {[type]} specs    specs to be run in the worker process
      * @param  {Number} retries  number of retries used
      */
-    // onWorkerEnd: function (cid, exitCode, specs, retries) {
-    // },
+    onWorkerEnd: function (cid, exitCode, specs, retries) {
+        executionEndTime = new Date();
+        const date = executionEndTime.getDate();
+        const month = executionEndTime.getMonth() + 1;
+        const year = executionEndTime.getFullYear();
+        const timeStamp = executionEndTime.getHours() + ':' + executionEndTime.getMinutes() + ':' + executionEndTime.getSeconds();
+        executionEndTime = year + '/' + month + '/' + date + ' ' + timeStamp;
+    },
     /**
      * Gets executed just before initialising the webdriver session and test framework. It allows you
      * to manipulate configurations depending on the capability or spec.
@@ -257,8 +284,9 @@ export const config: Options.Testrunner = {
      * @param {ITestCaseHookParameter} world    world object containing information on pickle and test step
      * @param {Object}                 context  Cucumber World object
      */
-    // beforeScenario: function (world, context) {
-    // },
+    beforeScenario: async function (world, context) {
+        await browser.maximizeWindow();
+    },
     /**
      *
      * Runs before a Cucumber Step.
@@ -281,6 +309,8 @@ export const config: Options.Testrunner = {
      */
     // afterStep: function (step, scenario, result, context) {
     // },
+    // afterStep: async function (step, scenario, { error, duration, passed }, context) {  
+    // },
     /**
      *
      * Runs after a Cucumber Scenario.
@@ -291,8 +321,9 @@ export const config: Options.Testrunner = {
      * @param {number}                 result.duration  duration of scenario in milliseconds
      * @param {Object}                 context          Cucumber World object
      */
-    // afterScenario: function (world, result, context) {
-    // },
+    afterScenario: async function (world, result, context) {
+        cucumberJson.attach(await browser.takeScreenshot(), 'image/png');
+    },
     /**
      *
      * Runs after a Cucumber Feature.
@@ -301,7 +332,7 @@ export const config: Options.Testrunner = {
      */
     // afterFeature: function (uri, feature) {
     // },
-    
+
     /**
      * Runs after a WebdriverIO command gets executed
      * @param {String} commandName hook command name
@@ -338,6 +369,31 @@ export const config: Options.Testrunner = {
      */
     // onComplete: function(exitCode, config, capabilities, results) {
     // },
+
+    onComplete: (exitCode, config, capabilities, results): any => {
+        const dateObject = new Date();
+        const date = dateObject.getDate();
+        const month = dateObject.getMonth() + 1;
+        const year = dateObject.getFullYear();
+        const timeStamp = dateObject.getHours() + 'h' + dateObject.getMinutes() + 'm' + dateObject.getSeconds() + 's';
+        const folderName = process.env.node + date + '-' + month + '-' + year + ' ' + timeStamp;
+        report.generate({
+            jsonDir: './.tmp/json',
+            reportPath: './e2e-testresults/' + folderName,
+            displayReportTime: true,
+            displayDuration: true,
+            customData: {
+                title: 'Run info',
+                data: [
+                    { label: 'Project', value: 'SD&O' },
+                    { label: 'Application', value: 'SODA' },
+                    { label: 'Environment', value: config.baseUrl },
+                    { label: 'Execution Start Time', value: executionStartTime },
+                    { label: 'Execution End Time', value: executionEndTime }
+                ]
+            }
+        });
+    }
     /**
     * Gets executed when a refresh happens.
     * @param {String} oldSessionId session ID of the old session
